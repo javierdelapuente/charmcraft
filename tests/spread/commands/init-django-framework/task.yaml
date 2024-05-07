@@ -1,4 +1,4 @@
-summary: test charmcraft init with flask-framework profile
+summary: test charmcraft init with django-framework profile
 
 execute: |
   unset CHARMCRAFT_STORE_API_URL
@@ -6,7 +6,7 @@ execute: |
   unset CHARMCRAFT_REGISTRY_URL
   mkdir -p test-init
   cd test-init
-  charmcraft init --profile flask-framework
+  charmcraft init --profile django-framework
   charmcraft fetch-libs
   charmcraft pack --verbose
   test -f *.charm
