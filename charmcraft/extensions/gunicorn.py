@@ -98,7 +98,7 @@ class _GunicornBase(Extension):
                     f"{protected!r} in charmcraft.yaml conflicts with a reserved field "
                     f"in the {self.framework}-framework extension, please remove it."
                 )
-        for merging in ("actions", "requires", "provides", "config.options"):
+        for merging in ("actions", "requires", "provides", "config.options", "charm-libs"):
             user_provided: dict[str, Any] = self._get_nested(self.yaml_data, merging)
             if not user_provided:
                 continue
@@ -145,6 +145,15 @@ class _GunicornBase(Extension):
                 "grafana-dashboard": {"interface": "grafana_dashboard"},
             },
             "config": {"options": {**self._WEBSERVER_OPTIONS, **self.options}},
+            "charm-libs": [
+                {"lib": "traefik_k8s.ingress", "version": "2"},
+                {"lib": "observability_libs.juju_topology", "version": "0"},
+                {"lib": "grafana_k8s.grafana_dashboard", "version": "0"},
+                {"lib": "loki_k8s.loki_push_api", "version": "0"},
+                {"lib": "data_platform_libs.data_interfaces", "version": "0"},
+                {"lib": "prometheus_k8s.prometheus_scrape", "version": "0"},
+                {"lib": "redis_k8s.redi", "version": "0"},
+            ],
             "parts": {"charm": {"plugin": "charm", "source": "."}},
         }
 
