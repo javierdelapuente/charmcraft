@@ -8,11 +8,6 @@ execute: |
   mkdir -p test-init
   cd test-init
   charmcraft init --profile flask-framework
-  cat <<- EOF >> charmcraft.yaml
-  charmhub:
-    api-url: https://api.staging.charmhub.io
-    storage-url: https://storage.staging.snapcraftcontent.com
-  EOF
 
   charmcraft fetch-libs
   charmcraft pack --verbose
