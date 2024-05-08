@@ -61,7 +61,7 @@ def flask_input_yaml_fixture():
                     {"lib": "loki_k8s.loki_push_api", "version": "0"},
                     {"lib": "data_platform_libs.data_interfaces", "version": "0"},
                     {"lib": "prometheus_k8s.prometheus_scrape", "version": "0"},
-                    {"lib": "redis_k8s.redi", "version": "0"},
+                    {"lib": "redis_k8s.redis", "version": "0"},
                 ],
                 "parts": {"charm": {"plugin": "charm", "source": "."}},
                 "peers": {"secret-storage": {"interface": "secret-storage"}},
@@ -122,7 +122,7 @@ def flask_input_yaml_fixture():
                     {"lib": "loki_k8s.loki_push_api", "version": "0"},
                     {"lib": "data_platform_libs.data_interfaces", "version": "0"},
                     {"lib": "prometheus_k8s.prometheus_scrape", "version": "0"},
-                    {"lib": "redis_k8s.redi", "version": "0"},
+                    {"lib": "redis_k8s.redis", "version": "0"},
                 ],
                 "resources": {
                     "django-app-image": {
