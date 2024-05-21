@@ -63,7 +63,7 @@ def flask_input_yaml_fixture():
                     {"lib": "prometheus_k8s.prometheus_scrape", "version": "0"},
                     {"lib": "redis_k8s.redis", "version": "0"},
                 ],
-                "parts": {"charm": {"plugin": "charm", "source": "."}},
+                "parts": {"charm": {"plugin": "charm", "source": ".", "build-packages": ["git"]}},
                 "peers": {"secret-storage": {"interface": "secret-storage"}},
                 "provides": {
                     "metrics-endpoint": {"interface": "prometheus_scrape"},
@@ -105,7 +105,7 @@ def flask_input_yaml_fixture():
                 "config": {
                     "options": {**DjangoFramework.options, **DjangoFramework._WEBSERVER_OPTIONS}
                 },
-                "parts": {"charm": {"plugin": "charm", "source": "."}},
+                "parts": {"charm": {"plugin": "charm", "source": ".", "build-packages": ["git"]}},
                 "peers": {"secret-storage": {"interface": "secret-storage"}},
                 "provides": {
                     "metrics-endpoint": {"interface": "prometheus_scrape"},
@@ -241,4 +241,4 @@ def test_handle_charm_part(flask_input_yaml, tmp_path):
         apply_extensions(tmp_path, flask_input_yaml)
     del flask_input_yaml["parts"]
     applied = apply_extensions(tmp_path, flask_input_yaml)
-    assert applied["parts"] == {"charm": {"plugin": "charm", "source": "."}}
+    assert applied["parts"] == {"charm": {"plugin": "charm", "source": ".", "build-packages": ["git"]}}

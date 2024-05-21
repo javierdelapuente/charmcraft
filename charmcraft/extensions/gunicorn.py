@@ -154,7 +154,7 @@ class _GunicornBase(Extension):
                 {"lib": "prometheus_k8s.prometheus_scrape", "version": "0"},
                 {"lib": "redis_k8s.redis", "version": "0"},
             ],
-            "parts": {"charm": {"plugin": "charm", "source": "."}},
+            "parts": {"charm": {"plugin": "charm", "source": ".", "build-packages": ["git"]}},
         }
 
     @override
