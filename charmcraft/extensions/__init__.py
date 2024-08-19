@@ -18,7 +18,7 @@
 
 from charmcraft.extensions._utils import apply_extensions
 from charmcraft.extensions.extension import Extension
-from charmcraft.extensions.twelvefactor import DjangoFramework, FlaskFramework, GoFramework
+from charmcraft.extensions.twelvefactor import DjangoFramework, FastAPIFramework, FlaskFramework, GoFramework
 from charmcraft.extensions.registry import (
     get_extension_class,
     get_extension_names,
@@ -42,3 +42,4 @@ __all__ = [
 register("flask-framework", FlaskFramework)
 register("django-framework", DjangoFramework)
 register("go-framework", GoFramework)
+register("fastapi-framework", FastAPIFramework)
