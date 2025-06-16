@@ -40,6 +40,7 @@ PROFILES = {
     "django-framework": "init-django-framework",
     "go-framework": "init-go-framework",
     "fastapi-framework": "init-fastapi-framework",
+    "spring-boot-framework": "init-spring-boot-framework",
 }
 DEFAULT_PROFILE = "kubernetes"
 
