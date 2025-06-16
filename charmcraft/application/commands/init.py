@@ -71,6 +71,9 @@ Available profiles are:
     go-framework:
         A basic Kubernetes charm for a 12-factor Go app.
 
+    spring-boot-framework:
+        A basic Kubernetes charm for a 12-factor Spring Boot app.
+
 Depending on the profile choice, Charmcraft will setup the following tree of
 files and directories:
 
