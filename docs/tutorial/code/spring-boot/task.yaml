@@ -1,0 +1,140 @@
+###########################################
+# IMPORTANT
+# Comments matter!
+# The docs use the wrapping comments as
+# markers for including said instructions
+# as snippets in the docs.
+###########################################
+summary: Getting started with Spring Boot tutorial
+
+environment:
+kill-timeout: 60m
+execute: |
+  # Move everything to $HOME so that Juju deployment works
+  mv *.yaml *.java $HOME
+  cd $HOME
+
+  # MicroK8s config setup
+  microk8s status --wait-ready
+  microk8s enable hostpath-storage
+  microk8s enable registry
+  microk8s enable ingress
+
+  # [docs:install-devpack-for-spring]
+  sudo snap install devpack-for-spring --classic
+  sudo apt update && sudo apt install -y openjdk-21-jdk
+  # [docs:install-devpack-for-spring-end]
+
+  # [docs:init-spring-boot]
+  devpack-for-spring boot start \
+    --path spring-boot-hello-world \
+    --project maven-project \
+    --language java \
+    --boot-version 3.4.4 \
+    --version 0.0.1 \
+    --group com.example \
+    --artifact demo \
+    --name demo \
+    --description "Demo project for Spring Boot" \
+    --package-name com.example.demo \
+    --dependencies web \
+    --packaging jar \
+    --java-version 21
+  cd spring-boot-hello-world
+  # [docs:init-spring-boot-end]
+
+  cp $HOME/HelloController.java $HOME/spring-boot-hello-world/src/main/java/com/example/demo/HelloController.java
+
+  # [docs:spring-boot-build]
+  ./mvnw clean install
+  # [docs:spring-boot-build-end]
+
+  java -jar target/demo-0.0.1.jar &
+  retry -n 5 --wait 2 curl localhost:8080
+
+  # [docs:curl-spring-boot]
+  curl localhost:8080
+  # [docs:curl-spring-boot-end]
+
+  kill $!
+
+  # [docs:create-rockcraft-yaml]
+  rockcraft init --profile spring-boot-framework
+  # [docs:create-rockcraft-yaml-end]
+
+  # [docs:experimental]
+  export ROCKCRAFT_ENABLE_EXPERIMENTAL_EXTENSIONS=true
+  # [docs:experimental-end]
+
+  # [docs:pack]
+  rockcraft pack
+  # [docs:pack-end]
+
+  # [docs:ls-rock]
+  ls *.rock -lh
+  # [docs:ls-rock-end]
+
+  # [docs:skopeo-copy]
+  rockcraft.skopeo copy \
+    --insecure-policy \
+    --dest-tls-verify=false \
+    oci-archive:spring-boot-hello-world_0.1_$(dpkg --print-architecture).rock \
+    docker://localhost:32000/spring-boot-hello-world:0.1
+  # [docs:skopeo-copy-end]
+
+  # [docs:create-charm-dir]
+  mkdir charm
+  cd charm
+  # [docs:create-charm-dir-end]  
+
+  # [docs:charm-init]
+  charmcraft init --profile spring-boot-framework --name spring-boot-hello-world
+  # [docs:charm-init-end]
+
+  # update platforms in charmcraft.yaml file
+  sed -i "s/amd64/$(dpkg --print-architecture)/g" charmcraft.yaml
+
+  # [docs:charm-pack]
+  CHARMCRAFT_ENABLE_EXPERIMENTAL_EXTENSIONS=true charmcraft pack
+  # [docs:charm-pack-end]
+
+  # [docs:add-juju-model]
+  juju add-model spring-boot-hello-world
+  # [docs:add-juju-model-end]
+
+  #[docs:add-model-constraints]
+  juju set-model-constraints -m spring-boot-hello-world \
+    arch=$(dpkg --print-architecture)
+  #[docs:add-model-constraints-end]
+
+  # [docs:deploy-app]
+  juju deploy \
+    ./spring-boot-hello-world_$(dpkg --print-architecture).charm \
+    spring-boot-hello-world --resource \
+    app-image=localhost:32000/spring-boot-hello-world:0.1
+  # [docs:deploy-app-end]
+
+  # [docs:deploy-nginx]
+  juju deploy nginx-ingress-integrator --channel=latest/stable --trust
+  juju integrate nginx-ingress-integrator spring-boot-hello-world
+  # [docs:deploy-nginx-end]
+
+  # [docs:config-nginx]
+  juju config nginx-ingress-integrator \
+    service-hostname=spring-boot-hello-world path-routes=/
+  # [docs:config-nginx-end]
+
+  # give Juju some time to deploy the apps
+  juju wait-for application spring-boot-hello-world --query='status=="active"' --timeout 10m
+  juju wait-for application nginx-ingress-integrator --query='status=="active"' --timeout 10m
+
+  # [docs:curl-init-deployment]
+  curl http://go-hello-world --resolve go-hello-world:80:127.0.0.1
+  # [docs:curl-init-deployment-end]
+
+  # TODO I AM HERE
+
+  # [docs:cleanup]
+  # delete all the files created during the tutorial
+  cd .. && rm -rf spring-boot-hello-world
+  # [docs:cleanup-end]
