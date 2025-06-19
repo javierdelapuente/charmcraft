@@ -188,8 +188,6 @@ execute: |
   cat visitors_rockcraft.yaml >> rockcraft.yaml
   sed -i "s/version: .*/version: 0.3/g" rockcraft.yaml
 
-  cat visitors_main.txt > main.go
-
   # [docs:check-go-app]
   go mod tidy
   # [docs:check-go-app-end]
@@ -197,8 +195,8 @@ execute: |
   # [docs:docker-2nd-update]
   ROCKCRAFT_ENABLE_EXPERIMENTAL_EXTENSIONS=true rockcraft pack
   rockcraft.skopeo --insecure-policy copy --dest-tls-verify=false \
-    oci-archive:go-hello-world_0.3_$(dpkg --print-architecture).rock \
-    docker://localhost:32000/go-hello-world:0.3
+    oci-archive:spring-boot-hello-world_0.3_$(dpkg --print-architecture).rock \
+    docker://localhost:32000/spring-boot-hello-world:0.3
   # [docs:docker-2nd-update-end]
 
   cat visitors_charmcraft.yaml >> ./charm/charmcraft.yaml
@@ -206,24 +204,24 @@ execute: |
 
   # [docs:refresh-2nd-deployment]
   CHARMCRAFT_ENABLE_EXPERIMENTAL_EXTENSIONS=true charmcraft pack
-  juju refresh go-hello-world \
-    --path=./go-hello-world_$(dpkg --print-architecture).charm \
-    --resource app-image=localhost:32000/go-hello-world:0.3
+  juju refresh spring-boot-hello-world \
+    --path=./spring-boot-hello-world_$(dpkg --print-architecture).charm \
+    --resource app-image=localhost:32000/spring-boot-hello-world:0.3
   # [docs:refresh-2nd-deployment-end]
 
   # [docs:deploy-postgres]
   juju deploy postgresql-k8s --trust
-  juju integrate go-hello-world postgresql-k8s
+  juju integrate spring-boot-hello-world postgresql-k8s
   # [docs:deploy-postgres-end]
 
   # give Juju some time to deploy and refresh the apps
   juju wait-for application postgresql-k8s --query='status=="active"' --timeout 20m | juju status --relations
   juju wait-for application go-hello-world --query='status=="active"' --timeout 20m | juju status --relations
 
-  curl http://go-hello-world --resolve go-hello-world:80:127.0.0.1 | grep Hi
-  curl http://go-hello-world/visitors --resolve go-hello-world:80:127.0.0.1 | grep 1
-  curl http://go-hello-world --resolve go-hello-world:80:127.0.0.1 | grep Hi
-  curl http://go-hello-world/visitors --resolve go-hello-world:80:127.0.0.1 | grep 2
+  curl http://spring-boot-hello-world --resolve spring-boot-hello-world:80:127.0.0.1 | grep Hi
+  curl http://spring-boot-hello-world/visitors --resolve spring-boot-hello-world:80:127.0.0.1 | grep 1
+  curl http://spring-boot-hello-world --resolve spring-boot-hello-world:80:127.0.0.1 | grep Hi
+  curl http://spring-boot-hello-world/visitors --resolve spring-boot-hello-world:80:127.0.0.1 | grep 2
 
   # [docs:clean-environment]
   CHARMCRAFT_ENABLE_EXPERIMENTAL_EXTENSIONS=true charmcraft clean

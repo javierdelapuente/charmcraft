@@ -448,37 +448,38 @@ to send a request via the ingress. It should return the
     command is a way of resolving the hostname of the request without
     setting a DNS record.
 
-# TODO I AM HERE
 
-Configure the Go app
---------------------
+Configure the Spring Boot app
+-----------------------------
 
-To demonstrate how to provide a configuration to the Go app,
+To demonstrate how to provide a configuration to the Spring Boot app,
 we will make the greeting configurable. We will expect this
-configuration option to be available in the Go app configuration under the
-keyword ``GREETING``. Change back to the ``~/go-hello-world`` directory using
-``cd ..`` and replace the code into ``main.go`` with the following:
+configuration option to be available in the Spring Boot app configuration under the
+keyword ``GREETING``. Change back to the ``~/spring-boot-hello-world`` directory using
+``cd ..`` and replace the code into
+``src/main/java/com/example/demo/HelloController.java`` with the following:
 
-.. literalinclude:: code/go/greeting_main.txt
-    :caption: ~/go-hello-world/main.go
-    :language: go
+.. literalinclude:: code/spring-boot/HelloController.java.greeting.txt
+    :caption: ~/spring-boot-hello-world/src/main/java/com/example/demo/
+     HelloController.java
+    :language: java
 
 Increment the ``version`` in ``rockcraft.yaml`` to ``0.2`` such that the
 top of the ``rockcraft.yaml`` file looks similar to the following:
 
 .. code-block:: yaml
-    :caption: ~/go-hello-world/rockcraft.yaml
+    :caption: ~/spring-boot-hello-world/rockcraft.yaml
     :emphasize-lines: 6
 
-    name: go-hello-world
+    name: spring-boot-hello-world
     # see https://documentation.ubuntu.com/rockcraft/en/latest/explanation/bases/
     # for more information about bases and using 'bare' bases for chiselled rocks
     base: bare # as an alternative, a ubuntu base can be used
     build-base: ubuntu@24.04 # build-base is required when the base is bare
     version: '0.2' # just for humans. Semantic versioning is recommended
-    summary: A summary of your Go app # 79 char long summary
+    summary: A summary of your Spring Boot app # 79 char long summary
     description: |
-        This is go-hello-world's description. You have a paragraph or two to tell the
+        This is spring-boot-hello-world's description. You have a paragraph or two to tell the
         most important story about it. Keep it under 100 words though,
         we live in tweetspace and your description wants to look good in the
         container registries out there.
@@ -492,20 +493,20 @@ top of the ``rockcraft.yaml`` file looks similar to the following:
 
 Let's pack and upload the rock:
 
-.. literalinclude:: code/go/task.yaml
+.. literalinclude:: code/spring-boot/task.yaml
     :language: bash
-    :start-after: [docs:docker-update]
-    :end-before: [docs:docker-update-end]
+    :start-after: [docs:skopeo-update]
+    :end-before: [docs:skopeo-update-end]
     :dedent: 2
 
 Change back into the charm directory using ``cd charm``.
 
-The ``go-framework`` Charmcraft extension supports adding configurations
+The ``spring-boot-framework`` Charmcraft extension supports adding configurations
 to ``charmcraft.yaml``, which will be passed as environment variables to
-the Go app. Add the following to the end of the
+the Spring Boot app. Add the following to the end of the
 ``charmcraft.yaml`` file:
 
-.. literalinclude:: code/go/greeting_charmcraft.yaml
+.. literalinclude:: code/spring-boot/greeting_charmcraft.yaml
     :language: yaml
 
 .. note::
@@ -514,9 +515,9 @@ the Go app. Add the following to the end of the
     by ``_``. An ``APP_`` prefix will also be added as a namespace
     for app configurations.
 
-We can now pack and deploy the new version of the Go app:
+We can now pack and deploy the new version of the Spring Boot app:
 
-.. literalinclude:: code/go/task.yaml
+.. literalinclude:: code/spring-boot/task.yaml
     :language: bash
     :start-after: [docs:refresh-deployment]
     :end-before: [docs:refresh-deployment-end]
@@ -525,22 +526,22 @@ We can now pack and deploy the new version of the Go app:
 After we wait for a bit monitoring ``juju status`` the app
 should go back to ``active`` again. Verify that the new configuration
 has been added using
-``juju config go-hello-world | grep -A 6 greeting:``,
+``juju config spring-boot-hello-world | grep -A 6 greeting:``,
 which should show the configuration option.
 
-Using ``curl http://go-hello-world  --resolve go-hello-world:80:127.0.0.1``
+Using ``curl http://spring-boot-hello-world  --resolve spring-boot-hello-world:80:127.0.0.1``
 shows that the response is still ``Hello, world!`` as expected.
 
 Now let's change the greeting:
 
-.. literalinclude:: code/go/task.yaml
+.. literalinclude:: code/spring-boot/task.yaml
     :language: bash
     :start-after: [docs:change-config]
     :end-before: [docs:change-config-end]
     :dedent: 2
 
 After we wait for a moment for the app to be restarted, using
-``curl http://go-hello-world  --resolve go-hello-world:80:127.0.0.1``
+``curl http://spring-boot-hello-world  --resolve spring-boot-hello-world:80:127.0.0.1``
 should now return the updated ``Hi!`` greeting.
 
 
@@ -558,59 +559,59 @@ This will require a few changes:
   the database.
 
 Let's start with the database migration to create the required tables.
-The charm created by the ``go-framework`` extension will execute the
+The charm created by the ``spring-boot-framework`` extension will execute the
 ``migrate.sh`` script if it exists. This script should ensure that the
 database is initialized and ready to be used by the app. We will
 create a ``migrate.sh`` file containing this logic.
 
-Go back out to the ``~/go-hello-world`` directory using ``cd ..``.
+Go back out to the ``~/spring-boot-hello-world`` directory using ``cd ..``.
 Create the ``migrate.sh`` file using a text editor and paste the
 following code into it:
 
-.. literalinclude:: code/go/visitors_migrate.sh
-    :caption: ~/go-hello-world/migrate.sh
+.. literalinclude:: code/spring-boot/visitors_migrate.sh
+    :caption: ~/spring-boot-hello-world/migrate.sh
     :language: bash
 
 .. note::
 
     The charm will pass the Database connection string in the
-    ``POSTGRESQL_DB_CONNECT_STRING`` environment variable once
+    ``POSTGRESQL_DB_CONNECT_STRING`` TODO JAVI environment variable once
     PostgreSQL has been integrated with the charm.
 
 Change the permissions of the file ``migrate.sh`` so that it is executable:
 
-.. literalinclude:: code/go/task.yaml
+.. literalinclude:: code/spring-boot/task.yaml
     :language: bash
     :start-after: [docs:change-migrate-permissions]
     :end-before: [docs:change-migrate-permissions-end]
     :dedent: 2
 
 For the migrations to work, we need the ``postgresql-client`` package
-installed in the rock. By default, the ``go-framework`` uses the ``base``
+installed in the rock. By default, the ``spring-boot-framework`` uses the ``bare``
 base, so we will also need to install a shell interpreter. Let's do it as a
 slice, so that the rock doesn't include unnecessary files. Open the
 ``rockcraft.yaml`` file using a text editor and add the following to the
 end of the file:
 
-.. literalinclude:: code/go/visitors_rockcraft.yaml
+.. literalinclude:: code/spring-boot/visitors_rockcraft.yaml
     :language: yaml
 
 Increment the ``version`` in ``rockcraft.yaml`` to ``0.3`` such that the
 top of the ``rockcraft.yaml`` file looks similar to the following:
 
 .. code-block:: yaml
-    :caption: ~/go-hello-world/rockcraft.yaml
+    :caption: ~/spring-boot-hello-world/rockcraft.yaml
     :emphasize-lines: 6
 
-    name: go-hello-world
+    name: spring-boot-hello-world
     # see https://documentation.ubuntu.com/rockcraft/en/latest/explanation/bases/
     # for more information about bases and using 'bare' bases for chiselled rocks
     base: bare # as an alternative, a ubuntu base can be used
     build-base: ubuntu@24.04 # build-base is required when the base is bare
     version: '0.3' # just for humans. Semantic versioning is recommended
-    summary: A summary of your Go app # 79 char long summary
+    summary: A summary of your Spring Boot app # 79 char long summary
     description: |
-        This is go-hello-world's description. You have a paragraph or two to tell the
+        This is spring-boot-hello-world's description. You have a paragraph or two to tell the
         most important story about it. Keep it under 100 words though,
         we live in tweetspace and your description wants to look good in the
         container registries out there.
@@ -622,11 +623,36 @@ top of the ``rockcraft.yaml`` file looks similar to the following:
         # ppc64el:
         # s390x:
 
-To be able to connect to PostgreSQL from the Go app, the library
+TODO POM.XML
+To be able to connect to PostgreSQL from the Spring Boot app, the library
 ``pgx`` will be used. The app code needs to be updated to keep track of
 the number of visitors and to include a new endpoint to retrieve the
 number of visitors. Open ``main.go`` in a text editor and
 replace its content with the following code:
+
+TODO POM.XML
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<version>42.7.7</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+		<groupId>com.h2database</groupId>
+		<artifactId>h2</artifactId>
+		<scope>test</scope>
+		</dependency>
+TODO HelloController.java
+TODO Visitor.java
+TODO VisitorRepository.java
+TODO VisitorService.java
+TODO rockcraft.yaml (postgress parts things and and base 24.04)
+TODO
+
 
 .. dropdown:: main.go
 
@@ -646,8 +672,8 @@ Let's pack and upload the rock:
 
 .. literalinclude:: code/go/task.yaml
     :language: bash
-    :start-after: [docs:docker-2nd-update]
-    :end-before: [docs:docker-2nd-update-end]
+    :start-after: [docs:skopeo-2nd-update]
+    :end-before: [docs:skopeo-2nd-update-end]
     :dedent: 2
 
 Change back into the charm directory using ``cd charm``.

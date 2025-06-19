@@ -11,7 +11,7 @@ environment:
 kill-timeout: 60m
 execute: |
   # Move everything to $HOME so that Juju deployment works
-  mv *.yaml *.java $HOME
+  mv *.txt *.yaml *.java $HOME
   cd $HOME
 
   # Don't use the staging store for this test
@@ -24,6 +24,9 @@ execute: |
   microk8s enable hostpath-storage
   microk8s enable registry
   microk8s enable ingress
+
+  # Bootstrap controller
+  juju bootstrap microk8s dev-controller
 
   # [docs:install-devpack-for-spring]
   sudo snap install devpack-for-spring --classic
@@ -125,6 +128,8 @@ execute: |
   # [docs:deploy-nginx-end]
 
   # [docs:config-nginx]
+
+
   juju config nginx-ingress-integrator \
     service-hostname=spring-boot-hello-world path-routes=/
   # [docs:config-nginx-end]
@@ -134,9 +139,73 @@ execute: |
   juju wait-for application nginx-ingress-integrator --query='status=="active"' --timeout 10m
 
   # [docs:curl-init-deployment]
-  curl http://go-hello-world --resolve go-hello-world:80:127.0.0.1
+  curl http://spring-boot-hello-world --resolve spring-boot-hello-world:80:127.0.0.1
+
   # [docs:curl-init-deployment-end]
 
+  cd ..
+  cat HelloController.java.greeting.txt > $HOME/spring-boot-hello-world/src/main/java/com/example/demo/HelloController.java
+  sed -i "s/version: .*/version: 0.2/g" rockcraft.yaml
+
+  # [docs:skopeo-update]
+  ROCKCRAFT_ENABLE_EXPERIMENTAL_EXTENSIONS=true rockcraft pack
+  rockcraft.skopeo --insecure-policy copy --dest-tls-verify=false \
+    oci-archive:spring-boot-hello-world_0.2_$(dpkg --print-architecture).rock \
+    docker://localhost:32000/spring-boot-hello-world:0.2
+  # [docs:skopeo-update-end]
+
+  cat greeting_charmcraft.yaml >> ./charm/charmcraft.yaml
+  cd charm
+
+  # [docs:refresh-deployment]
+  CHARMCRAFT_ENABLE_EXPERIMENTAL_EXTENSIONS=true charmcraft pack
+  juju refresh spring-boot-hello-world \
+    --path=./spring-boot-hello-world_$(dpkg --print-architecture).charm \
+    --resource app-image=localhost:32000/spring-boot-hello-world:0.2
+  # [docs:refresh-deployment-end]
+
+  # give Juju some time to refresh the app
+  juju wait-for application spring-boot-hello-world --query='status=="active"' --timeout 10m
+
+  # curl and check that the response is Hello
+  curl http://spring-boot-hello-world --resolve spring-boot-hello-world:80:127.0.0.1 | grep Hello
+
+  # [docs:change-config]
+  juju config spring-boot-hello-world greeting='Hi!'
+  # [docs:change-config-end]
+
+  juju wait-for application spring-boot-hello-world --query='status=="active"' --timeout 10m
+
+  # curl and check that the response is now Hi
+  curl http://spring-boot-hello-world --resolve spring-boot-hello-world:80:127.0.0.1 | grep Hi
+
+  cd ..
+  cat visitors_migrate.sh >> migrate.sh
+
+  # [docs:change-migrate-permissions]
+  chmod u+x migrate.sh
+  # [docs:change-migrate-permissions-end]
+
+  cat visitors_rockcraft.yaml >> rockcraft.yaml
+  sed -i "s/version: .*/version: 0.3/g" rockcraft.yaml
+
+  cat HelloController.java.visitors.txt > $HOME/spring-boot-hello-world/src/main/java/com/example/demo/HelloController.java
+  cat pom.xml.visitors.txt > $HOME/spring-boot-hello-world/pom.xml ??
+
+  # [docs:check-go-app]
+  TODO REMOVE THIS ?
+  go mod tidy
+  # [docs:check-go-app-end]
+
+  # [docs:skopeo-2nd-update]
+  ROCKCRAFT_ENABLE_EXPERIMENTAL_EXTENSIONS=true rockcraft pack
+  rockcraft.skopeo --insecure-policy copy --dest-tls-verify=false \
+    oci-archive:spring-boot-hello-world_0.3_$(dpkg --print-architecture).rock \
+    docker://localhost:32000/spring-boot-hello-world:0.3
+  # [docs:skopeo-2nd-update-end]
+  
+
+  
   # TODO I AM HERE
 
   # [docs:cleanup]
