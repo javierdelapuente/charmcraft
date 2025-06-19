@@ -14,6 +14,11 @@ execute: |
   mv *.yaml *.java $HOME
   cd $HOME
 
+  # Don't use the staging store for this test
+  unset CHARMCRAFT_STORE_API_URL
+  unset CHARMCRAFT_UPLOAD_URL
+  unset CHARMCRAFT_REGISTRY_URL
+
   # MicroK8s config setup
   microk8s status --wait-ready
   microk8s enable hostpath-storage
